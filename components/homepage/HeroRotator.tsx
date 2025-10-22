@@ -19,8 +19,8 @@ export default function HeroRotator({
                                       sideButtonText = 'Contact the Team',
                                       sideButtonHref = '/contact',
                                       intervalMs = 2000,
-                                      brandLingerMs = 2000,
-                                      brandExitMs = 600,
+                                      brandLingerMs = 700,  // ⬅️ was 2000
+                                      brandExitMs = 380,    // ⬅️ was 600
                                     }: Props) {
   const words = useMemo(
     () => ['Vision', 'Velocity', 'Vector', 'Vanguard', 'Vigilance'],
