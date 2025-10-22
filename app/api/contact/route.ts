@@ -1,28 +1,50 @@
 // app/api/contact/route.ts
 import type { NextRequest } from "next/server";
 
+export const runtime = "nodejs"; // ensure Node runtime for outbound fetch
+
 const SITE_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
+const isProd = process.env.NODE_ENV === "production";
+
+/* ---------------- utils ---------------- */
+
+function badRequest(msg: string) {
+  return new Response(msg, { status: 400 });
+}
+function internal(msg: string) {
+  // Return less detail in prod, more in dev
+  return new Response(isProd ? "server_error" : msg, { status: 500 });
+}
 
 /* ---------------- reCAPTCHA v3 ---------------- */
 
 async function verifyRecaptcha(token: string, expectedAction: string) {
-  const secret = process.env.RECAPTCHA_SECRET!;
+  const secret = process.env.RECAPTCHA_SECRET;
+  if (!secret) return { ok: false as const, reason: "recaptcha_misconfigured" as const };
+
   const body = new URLSearchParams({ secret, response: token });
 
   const res = await fetch(SITE_VERIFY_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
+    // recaptcha should never be cached
+    cache: "no-store",
   });
 
-  const data = await res.json();
-  // data: { success, score, action, ... }
-  if (!data?.success) return { ok: false, reason: "recaptcha_failed" as const };
+  let data: any = null;
+  try {
+    data = await res.json();
+  } catch {
+    return { ok: false as const, reason: "recaptcha_parse_error" as const };
+  }
+
+  if (!data?.success) return { ok: false as const, reason: "recaptcha_failed" as const };
   if (data.action && data.action !== expectedAction) {
-    return { ok: false, reason: "recaptcha_action_mismatch" as const };
+    return { ok: false as const, reason: "recaptcha_action_mismatch" as const };
   }
   if (typeof data.score === "number" && data.score < 0.5) {
-    return { ok: false, reason: "recaptcha_low_score" as const };
+    return { ok: false as const, reason: "recaptcha_low_score" as const };
   }
   return { ok: true as const };
 }
@@ -30,27 +52,29 @@ async function verifyRecaptcha(token: string, expectedAction: string) {
 /* ---------------- Monkeysmail ---------------- */
 
 async function sendViaMonkeysmail(form: Record<string, string>) {
-  const apiKey = process.env.MONKEYSMAIL_API_KEY!;
-  const fromEmail = process.env.MONKEYSMAIL_FROM_EMAIL!; // e.g. no-reply@colibriv.com
+  const apiKey = process.env.MONKEYSMAIL_API_KEY;
+  const fromEmail = process.env.MONKEYSMAIL_FROM_EMAIL;
   const fromName = process.env.MONKEYSMAIL_FROM_NAME || "ColibriV";
-  const toCsv = process.env.MONKEYSMAIL_TO!; // can be a single email or CSV
+  const toCsv = process.env.MONKEYSMAIL_TO;
   const apiBase = process.env.MONKEYSMAIL_API_BASE || "https://smtp.monkeysmail.com";
 
+  if (!apiKey) throw new Error("MONKEYSMAIL_API_KEY missing");
+  if (!fromEmail) throw new Error("MONKEYSMAIL_FROM_EMAIL missing");
+  if (!toCsv) throw new Error("MONKEYSMAIL_TO missing");
+
   const to = toCsv.split(",").map((s) => s.trim()).filter(Boolean);
+  if (to.length === 0) throw new Error("MONKEYSMAIL_TO empty");
 
   const subject = `[Contact] ${form.reason || "General"} — ${form.name || "Unknown"}`;
-
-  const lines = [
+  const text = [
     `Name: ${form.name || ""}`,
     `Email: ${form.email || ""}`,
     `Company: ${form.company || ""}`,
     `Reason: ${form.reason || ""}`,
     "",
     (form.message || "").trim(),
-  ];
-  const text = lines.join("\n");
+  ].join("\n");
 
-  // Simple HTML body (kept lightweight and readable)
   const html = `
     <div style="font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.45;color:#0f172a">
       <h2 style="margin:0 0 8px 0">New contact submission</h2>
@@ -64,10 +88,10 @@ async function sendViaMonkeysmail(form: Record<string, string>) {
   ]
     .map(
       ([k, v]) => `
-            <tr>
-              <td style="padding:6px 8px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">${k}</td>
-              <td style="padding:6px 8px;border:1px solid #e2e8f0">${(v || "").toString()}</td>
-            </tr>`
+              <tr>
+                <td style="padding:6px 8px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">${k}</td>
+                <td style="padding:6px 8px;border:1px solid #e2e8f0">${(v || "").toString()}</td>
+              </tr>`
     )
     .join("")}
         </tbody>
@@ -76,19 +100,24 @@ async function sendViaMonkeysmail(form: Record<string, string>) {
     </div>
   `.trim();
 
-  const payload = {
+  // Minimal payload per Monkeysmail docs
+  const payload: any = {
     from: { email: fromEmail, name: fromName },
     to,
     subject,
-    text, // always include a text fallback
+    text,
     html,
-    // optional metadata:
     tags: ["contact-form"],
-    // Many providers support reply-to like this; keeping the key as common name:
-    reply_to: form.email || undefined,
   };
 
-  const resp = await fetch(`${apiBase}/messages/send?mode=sync`, {
+  // Most providers accept this key; if Monkeysmail expects `replyTo`, try that instead:
+  if (form.email) {
+    payload.reply_to = form.email;
+  }
+
+  const url = `${apiBase.replace(/\/$/, "")}/messages/send?mode=sync`;
+
+  const resp = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -97,25 +126,32 @@ async function sendViaMonkeysmail(form: Record<string, string>) {
     body: JSON.stringify(payload),
   });
 
-  // Monkeysmail returns JSON; treat non-2xx as failure
+  const bodyText = await resp.text(); // always read the body so we can debug
   if (!resp.ok) {
-    let err: unknown;
+    // try to parse json; otherwise keep text
+    let details: unknown = bodyText;
     try {
-      err = await resp.text();
-    } catch {
-      err = `HTTP ${resp.status}`;
-    }
-    throw new Error(`Monkeysmail error: ${resp.status} ${String(err)}`);
+      details = JSON.parse(bodyText);
+    } catch {}
+
+    // log full in server logs
+    console.error("[Monkeysmail] non-OK", resp.status, details);
+
+    // surface in dev to client, redact in prod
+    const message = !isProd
+      ? `monkeysmail_failed (${resp.status}): ${typeof details === "string" ? details : JSON.stringify(details)}`
+      : "monkeysmail_failed";
+    throw new Error(message);
   }
 }
 
 /* ---------------- Drupal Webform (optional) ---------------- */
 
 async function sendViaDrupalWebform(form: Record<string, string>) {
-  const base = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL?.replace(/\/$/, "")!;
-  const webformId = process.env.DRUPAL_WEBFORM_ID || "contact"; // change if needed
+  const base = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL?.replace(/\/$/, "");
+  const webformId = process.env.DRUPAL_WEBFORM_ID || "contact";
+  if (!base) throw new Error("DRUPAL BASE URL missing");
 
-  // CSRF token for cookie-less POST
   const tokenResp = await fetch(`${base}/session/token`, { cache: "no-store" });
   if (!tokenResp.ok) throw new Error("Failed to get CSRF token");
   const csrf = await tokenResp.text();
@@ -138,9 +174,10 @@ async function sendViaDrupalWebform(form: Record<string, string>) {
     body: JSON.stringify(payload),
   });
 
+  const result = await submitResp.text();
   if (!submitResp.ok) {
-    const err = await submitResp.text();
-    throw new Error(`Drupal webform error: ${submitResp.status} ${err}`);
+    console.error("[Drupal webform] non-OK", submitResp.status, result);
+    throw new Error(!isProd ? `drupal_failed (${submitResp.status}): ${result}` : "drupal_failed");
   }
 }
 
@@ -153,23 +190,31 @@ export async function POST(req: NextRequest) {
     // Honeypot
     if (data._hp_) return new Response("OK", { status: 200 });
 
+    // basic field sanity
+    if (!data.name || !data.email || !data.message) {
+      return badRequest("missing_fields");
+    }
+
     // reCAPTCHA v3
     const token = data.grecaptchaToken as string | undefined;
-    if (!token) return new Response("missing recaptcha", { status: 400 });
+    if (!token) return badRequest("missing_recaptcha");
     const check = await verifyRecaptcha(token, "contact");
-    if (!check.ok) return new Response(check.reason, { status: 400 });
+    if (!check.ok) return badRequest(check.reason);
 
-    // Dispatch destination
-    const destination = process.env.CONTACT_DESTINATION || "monkeysmail";
+    // where to send
+    const destination = (process.env.CONTACT_DESTINATION || "monkeysmail").toLowerCase();
+
     if (destination === "drupal") {
       await sendViaDrupalWebform(data);
-    } else {
+    } else if (destination === "monkeysmail") {
       await sendViaMonkeysmail(data);
+    } else {
+      return badRequest("invalid_destination");
     }
 
     return Response.json({ ok: true });
   } catch (e: any) {
-    console.error("[/api/contact] error", e);
-    return new Response("server_error", { status: 500 });
+    console.error("[/api/contact] error", e?.message || e, e?.stack);
+    return internal(e?.message || "server_error");
   }
 }
