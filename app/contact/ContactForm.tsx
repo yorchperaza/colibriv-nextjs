@@ -7,21 +7,30 @@ import Script from "next/script";
 const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!;
 
 export default function ContactForm() {
-  const [status, setStatus] = useState<"idle"|"sending"|"ok"|"err">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "ok" | "err">("idle");
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Optional honeypot
-  const hpName = "_hp_";
+  const hpName = "_hp_"; // honeypot
 
   const onSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus("sending");
 
-    const formData = new FormData(e.currentTarget);
+    // ✅ Keep a stable reference to the form element
+    const formEl = e.currentTarget;
+
+    // Collect data before any awaits
+    const formData = new FormData(formEl);
     const payload: Record<string, string> = {};
-    formData.forEach((v, k) => { payload[k] = String(v); });
+    formData.forEach((v, k) => {
+      payload[k] = String(v);
+    });
 
     try {
+      // @ts-ignore
+      if (typeof grecaptcha === "undefined") {
+        throw new Error("recaptcha_unavailable");
+      }
       // @ts-ignore
       const token = await grecaptcha.execute(SITE_KEY, { action: "contact" });
       payload.grecaptchaToken = token;
@@ -32,17 +41,23 @@ export default function ContactForm() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "server_error");
+      }
+
+      // ✅ Reset the existing form **before** changing UI state
+      if (formEl && typeof formEl.reset === "function") formEl.reset();
+
       setStatus("ok");
-      e.currentTarget.reset();
     } catch (err) {
       console.error(err);
       setStatus("err");
     }
   }, []);
 
-  // Preload reCAPTCHA
   useEffect(() => {
+    // Preload reCAPTCHA
     // @ts-ignore
     if (typeof grecaptcha !== "undefined") {
       // @ts-ignore
@@ -55,31 +70,65 @@ export default function ContactForm() {
       <Script
         src={`https://www.google.com/recaptcha/api.js?render=${SITE_KEY}`}
         strategy="afterInteractive"
+        onLoad={() => {
+          // @ts-ignore
+          if (typeof grecaptcha !== "undefined") {
+            // @ts-ignore
+            grecaptcha.ready(() => {});
+          }
+        }}
       />
       <form className="mt-6 grid gap-4" onSubmit={onSubmit} ref={formRef}>
         {/* Honeypot (hidden from users) */}
-        <input type="text" name={hpName} tabIndex={-1} autoComplete="off" className="hidden" />
+        <input
+          type="text"
+          name={hpName}
+          tabIndex={-1}
+          autoComplete="off"
+          className="hidden"
+          aria-hidden="true"
+        />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="name" className="text-sm font-semibold text-slate-700">Name</label>
-            <input id="name" name="name" type="text" required
-                   className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600"
-                   placeholder="Your full name" />
+            <label htmlFor="name" className="text-sm font-semibold text-slate-700">
+              Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600"
+              placeholder="Your full name"
+            />
           </div>
           <div>
-            <label htmlFor="email" className="text-sm font-semibold text-slate-700">Email</label>
-            <input id="email" name="email" type="email" required
-                   className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600"
-                   placeholder="you@company.com" />
+            <label htmlFor="email" className="text-sm font-semibold text-slate-700">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600"
+              placeholder="you@company.com"
+            />
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="reason" className="text-sm font-semibold text-slate-700">Reason</label>
-            <select id="reason" name="reason" defaultValue="Partnerships"
-                    className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-600">
+            <label htmlFor="reason" className="text-sm font-semibold text-slate-700">
+              Reason
+            </label>
+            <select
+              id="reason"
+              name="reason"
+              defaultValue="Partnerships"
+              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-600"
+            >
               <option>Partnerships</option>
               <option>Investors</option>
               <option>Press & Media</option>
@@ -88,26 +137,43 @@ export default function ContactForm() {
             </select>
           </div>
           <div>
-            <label htmlFor="company" className="text-sm font-semibold text-slate-700">Company / Organization</label>
-            <input id="company" name="company" type="text"
-                   className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600"
-                   placeholder="Company name (optional)" />
+            <label htmlFor="company" className="text-sm font-semibold text-slate-700">
+              Company / Organization
+            </label>
+            <input
+              id="company"
+              name="company"
+              type="text"
+              className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600"
+              placeholder="Company name (optional)"
+            />
           </div>
         </div>
 
         <div>
-          <label htmlFor="message" className="text-sm font-semibold text-slate-700">Message</label>
-          <textarea id="message" name="message" required rows={6}
-                    className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600"
-                    placeholder="How can we help?" />
+          <label htmlFor="message" className="text-sm font-semibold text-slate-700">
+            Message
+          </label>
+          <textarea
+            id="message"
+            name="message"
+            required
+            rows={6}
+            className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600"
+            placeholder="How can we help?"
+          />
         </div>
 
         <div className="flex items-center justify-between gap-4">
           <div className="text-xs text-slate-500">
-            Protected by reCAPTCHA. <span className="underline">Privacy</span> & <span className="underline">Terms</span> apply.
+            Protected by reCAPTCHA. <span className="underline">Privacy</span> &{" "}
+            <span className="underline">Terms</span> apply.
           </div>
-          <button type="submit" disabled={status === "sending"}
-                  className="inline-flex items-center rounded-xl bg-red-600 px-5 py-3 text-base font-semibold text-white hover:opacity-95 disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={status === "sending"}
+            className="inline-flex items-center rounded-xl bg-red-600 px-5 py-3 text-base font-semibold text-white hover:opacity-95 disabled:opacity-60"
+          >
             {status === "sending" ? "Sending..." : "Send Message"}
           </button>
         </div>

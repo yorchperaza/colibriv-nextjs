@@ -136,7 +136,7 @@ export default function ContactPage() {
               </h2>
               <p className="mt-2 text-slate-700">
                 Share a bit about your interest and we’ll route to the right
-                person. We aim to reply within 2–3 business days.
+                person.
               </p>
 
               <ContactForm />
