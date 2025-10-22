@@ -175,7 +175,7 @@ export default function HeroRotator({
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  href="/investors/overview"
+                  href="/investors#overview"
                   className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3.5 text-base font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/50 focus-visible:ring-offset-2"
                 >
                   Investor Overview

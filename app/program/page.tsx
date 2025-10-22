@@ -176,7 +176,7 @@ export default function ProgramPage() {
 
           <div className="mt-6">
             <Link
-              href="/investors/overview"
+              href="/investors#overview"
               className="text-slate-900 font-semibold underline decoration-red-600 decoration-2 underline-offset-4"
             >
               Investor overview →

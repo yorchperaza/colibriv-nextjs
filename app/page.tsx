@@ -136,7 +136,7 @@ export default async function Home() {
                 {/* CTAs */}
                 <div className="flex flex-wrap gap-3">
                   <Link
-                    href="/investors/overview"
+                    href="/investors#overview"
                     className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-base font-semibold text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/50 focus-visible:ring-offset-2"
                   >
                     Get the Investor Pack
@@ -305,7 +305,7 @@ export default async function Home() {
             <Link href="/contact" className="inline-flex items-center rounded-xl bg-white px-5 py-3 text-base font-semibold text-slate-900 hover:opacity-90">
               Contact Us
             </Link>
-            <Link href="/investors/overview" className="inline-flex items-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">
+            <Link href="/investors#overview" className="inline-flex items-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">
               Investor Overview
             </Link>
           </div>
