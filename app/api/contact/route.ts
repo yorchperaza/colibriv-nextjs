@@ -115,7 +115,7 @@ async function sendViaMonkeysmail(form: Record<string, string>) {
     payload.reply_to = form.email;
   }
 
-  const url = `${apiBase.replace(/\/$/, "")}/messages/send?mode=sync`;
+  const url = `${apiBase.replace(/\/$/, "")}/messages/send`;
 
   const resp = await fetch(url, {
     method: "POST",
