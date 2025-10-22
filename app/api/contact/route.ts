@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server";
 
 const SITE_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
 
+/* ---------------- reCAPTCHA v3 ---------------- */
+
 async function verifyRecaptcha(token: string, expectedAction: string) {
   const secret = process.env.RECAPTCHA_SECRET!;
   const body = new URLSearchParams({ secret, response: token });
@@ -15,68 +17,109 @@ async function verifyRecaptcha(token: string, expectedAction: string) {
 
   const data = await res.json();
   // data: { success, score, action, ... }
-  if (!data?.success) return { ok: false, reason: "recaptcha_failed" };
+  if (!data?.success) return { ok: false, reason: "recaptcha_failed" as const };
   if (data.action && data.action !== expectedAction) {
-    return { ok: false, reason: "recaptcha_action_mismatch" };
+    return { ok: false, reason: "recaptcha_action_mismatch" as const };
   }
   if (typeof data.score === "number" && data.score < 0.5) {
-    return { ok: false, reason: "recaptcha_low_score" };
+    return { ok: false, reason: "recaptcha_low_score" as const };
   }
-  return { ok: true };
+  return { ok: true as const };
 }
 
-async function sendViaMailgun(form: Record<string, string>) {
-  const domain = process.env.MAILGUN_DOMAIN!;
-  const apiKey = process.env.MAILGUN_API_KEY!;
-  const from = process.env.MAILGUN_FROM!;
-  const to = process.env.MAILGUN_TO!;
+/* ---------------- Monkeysmail ---------------- */
+
+async function sendViaMonkeysmail(form: Record<string, string>) {
+  const apiKey = process.env.MONKEYSMAIL_API_KEY!;
+  const fromEmail = process.env.MONKEYSMAIL_FROM_EMAIL!; // e.g. no-reply@colibriv.com
+  const fromName = process.env.MONKEYSMAIL_FROM_NAME || "ColibriV";
+  const toCsv = process.env.MONKEYSMAIL_TO!; // can be a single email or CSV
+  const apiBase = process.env.MONKEYSMAIL_API_BASE || "https://smtp.monkeysmail.com";
+
+  const to = toCsv.split(",").map((s) => s.trim()).filter(Boolean);
 
   const subject = `[Contact] ${form.reason || "General"} — ${form.name || "Unknown"}`;
-  const text = [
+
+  const lines = [
     `Name: ${form.name || ""}`,
     `Email: ${form.email || ""}`,
     `Company: ${form.company || ""}`,
     `Reason: ${form.reason || ""}`,
     "",
-    form.message || "",
-  ].join("\n");
+    (form.message || "").trim(),
+  ];
+  const text = lines.join("\n");
 
-  const body = new URLSearchParams({
-    from,
+  // Simple HTML body (kept lightweight and readable)
+  const html = `
+    <div style="font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.45;color:#0f172a">
+      <h2 style="margin:0 0 8px 0">New contact submission</h2>
+      <table style="border-collapse:collapse;width:100%;max-width:640px;margin:8px 0">
+        <tbody>
+          ${[
+    ["Name", form.name || ""],
+    ["Email", form.email || ""],
+    ["Company", form.company || ""],
+    ["Reason", form.reason || ""],
+  ]
+    .map(
+      ([k, v]) => `
+            <tr>
+              <td style="padding:6px 8px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">${k}</td>
+              <td style="padding:6px 8px;border:1px solid #e2e8f0">${(v || "").toString()}</td>
+            </tr>`
+    )
+    .join("")}
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px;border:1px solid #e2e8f0;background:#f1f5f9;white-space:pre-wrap">${(form.message || "").trim()}</div>
+    </div>
+  `.trim();
+
+  const payload = {
+    from: { email: fromEmail, name: fromName },
     to,
     subject,
-    text,
-    "h:Reply-To": form.email || "",
-  });
+    text, // always include a text fallback
+    html,
+    // optional metadata:
+    tags: ["contact-form"],
+    // Many providers support reply-to like this; keeping the key as common name:
+    reply_to: form.email || undefined,
+  };
 
-  const auth = Buffer.from(`api:${apiKey}`).toString("base64");
-  const resp = await fetch(`https://api.mailgun.net/v3/${domain}/messages`, {
+  const resp = await fetch(`${apiBase}/messages/send?mode=sync`, {
     method: "POST",
     headers: {
-      Authorization: `Basic ${auth}`,
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Type": "application/json",
+      "X-API-Key": apiKey,
     },
-    body,
+    body: JSON.stringify(payload),
   });
 
+  // Monkeysmail returns JSON; treat non-2xx as failure
   if (!resp.ok) {
-    const errTxt = await resp.text();
-    throw new Error(`Mailgun error: ${resp.status} ${errTxt}`);
+    let err: unknown;
+    try {
+      err = await resp.text();
+    } catch {
+      err = `HTTP ${resp.status}`;
+    }
+    throw new Error(`Monkeysmail error: ${resp.status} ${String(err)}`);
   }
 }
 
-async function sendViaDrupalWebform(form: Record<string, string>) {
-  // OPTIONAL alternative: forward to Drupal Webform REST.
-  // Requires Webform + Webform REST + (optionally) reCAPTCHA module on Drupal.
-  const base = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL?.replace(/\/$/, "")!;
-  const webformId = "contact"; // change to your webform machine name
+/* ---------------- Drupal Webform (optional) ---------------- */
 
-  // CSRF token (for cookie-less requests)
+async function sendViaDrupalWebform(form: Record<string, string>) {
+  const base = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL?.replace(/\/$/, "")!;
+  const webformId = process.env.DRUPAL_WEBFORM_ID || "contact"; // change if needed
+
+  // CSRF token for cookie-less POST
   const tokenResp = await fetch(`${base}/session/token`, { cache: "no-store" });
   if (!tokenResp.ok) throw new Error("Failed to get CSRF token");
   const csrf = await tokenResp.text();
 
-  // Map fields to your webform element keys
   const payload = {
     webform_id: webformId,
     name: form.name || "",
@@ -101,24 +144,27 @@ async function sendViaDrupalWebform(form: Record<string, string>) {
   }
 }
 
+/* ---------------- Route handler ---------------- */
+
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
-    // Basic honeypot
+
+    // Honeypot
     if (data._hp_) return new Response("OK", { status: 200 });
 
-    // Verify reCAPTCHA v3
+    // reCAPTCHA v3
     const token = data.grecaptchaToken as string | undefined;
     if (!token) return new Response("missing recaptcha", { status: 400 });
     const check = await verifyRecaptcha(token, "contact");
     if (!check.ok) return new Response(check.reason, { status: 400 });
 
-    // Dispatch
-    const destination = process.env.CONTACT_DESTINATION || "mailgun";
+    // Dispatch destination
+    const destination = process.env.CONTACT_DESTINATION || "monkeysmail";
     if (destination === "drupal") {
       await sendViaDrupalWebform(data);
     } else {
-      await sendViaMailgun(data);
+      await sendViaMonkeysmail(data);
     }
 
     return Response.json({ ok: true });
