@@ -279,10 +279,10 @@ export default async function Home() {
 
             <div className="mt-6">
               <Link
-                href="/program/global"
+                href="/program/roadmap"
                 className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2"
               >
-                See our global rollout plan →
+                See our program roadmap →
               </Link>
             </div>
           </div>
