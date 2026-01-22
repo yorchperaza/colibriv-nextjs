@@ -185,7 +185,7 @@ export default function PreLaunchPage() {
                 6312 S Fiddlers Green Circle, Greenwood Village, CO 80111
               </p>
               <p className="mt-3 text-white/70">
-                Colorado serves as ColibriV's strategic and regulatory center, including:
+                Colorado serves as ColibriV&apos;s strategic and regulatory center, including:
               </p>
               <ul className="mt-4 space-y-2">
                 {[
@@ -201,7 +201,7 @@ export default function PreLaunchPage() {
                 ))}
               </ul>
               <p className="mt-4 text-sm text-white/60 font-medium">
-                The United States is ColibriV's first commercial and certification market.
+                The United States is ColibriV&apos;s first commercial and certification market.
               </p>
             </div>
 

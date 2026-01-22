@@ -31,7 +31,7 @@ export default function TermsPage() {
             
             {/* Introduction */}
             <p className="lead">
-              Welcome to colibriv.com (the "Website"). By accessing or using this Website, you agree to be bound by these Terms of Use. If you do not agree to these terms, please do not use this Website.
+              Welcome to colibriv.com (the &quot;Website&quot;). By accessing or using this Website, you agree to be bound by these Terms of Use. If you do not agree to these terms, please do not use this Website.
             </p>
 
             {/* Acceptance */}
@@ -96,13 +96,13 @@ export default function TermsPage() {
               This Website may use third-party services for payment processing, analytics, and other functions. These services may have their own terms and privacy policies. By using our Website, you agree to be bound by the terms of these third-party services where applicable.
             </p>
             <p>
-              Payment processing is handled by Stripe. Your use of payment services is subject to Stripe's terms of service and privacy policy.
+              Payment processing is handled by Stripe. Your use of payment services is subject to Stripe&apos;s terms of service and privacy policy.
             </p>
 
             {/* Disclaimers */}
             <h2>Disclaimers</h2>
             <p>
-              THIS WEBSITE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT ANY WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. COLIBRIV DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+              THIS WEBSITE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT ANY WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. COLIBRIV DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
             </p>
             <p>
               We do not warrant that the Website will be uninterrupted, error-free, or free of viruses or other harmful components. We do not guarantee the accuracy or completeness of any information on the Website.
@@ -134,7 +134,7 @@ export default function TermsPage() {
             {/* Modifications */}
             <h2>Modifications to Terms</h2>
             <p>
-              We reserve the right to modify these Terms of Use at any time. We will notify you of any changes by posting the new Terms on this page and updating the "Effective" date. Your continued use of the Website after any changes constitutes acceptance of the new Terms.
+              We reserve the right to modify these Terms of Use at any time. We will notify you of any changes by posting the new Terms on this page and updating the &quot;Effective&quot; date. Your continued use of the Website after any changes constitutes acceptance of the new Terms.
             </p>
 
             {/* Severability */}

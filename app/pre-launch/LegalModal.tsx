@@ -219,7 +219,7 @@ function PrivacyPolicyContent() {
             Cookies may be used for analytics and improving user experience.
           </p>
 
-          <h4 className="text-base font-bold text-slate-900 mt-6">Children's Privacy</h4>
+          <h4 className="text-base font-bold text-slate-900 mt-6">Children&apos;s Privacy</h4>
           <p className="text-slate-600">
             This website is not intended for users under 18 years of age.
           </p>

@@ -31,7 +31,7 @@ export default function PrivacyPage() {
             
             {/* Introduction */}
             <p className="lead">
-              ColibriV, LLC ("ColibriV," "we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website colibriv.com.
+              ColibriV, LLC (&quot;ColibriV,&quot; &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website colibriv.com.
             </p>
 
             {/* Information Collected */}
@@ -124,7 +124,7 @@ export default function PrivacyPage() {
             </p>
 
             {/* Children's Privacy */}
-            <h2>Children's Privacy</h2>
+            <h2>Children&apos;s Privacy</h2>
             <p>
               Our website is not intended for users under 18 years of age. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately.
             </p>
@@ -144,7 +144,7 @@ export default function PrivacyPage() {
             {/* Changes */}
             <h2>Changes to This Privacy Policy</h2>
             <p>
-              We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Effective" date.
+              We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the &quot;Effective&quot; date.
             </p>
 
             {/* Contact */}
