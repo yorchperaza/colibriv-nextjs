@@ -147,7 +147,7 @@ export default function ProgramPage() {
             {[
               {
                 t: "Pre-Seed",
-                v: "US$1.5–3.0M",
+                v: "US$3.0–5.0M",
                 d: "Pressurized single-sector hot-fire; initial NOx & stability maps; safety/means-of-compliance v1.",
               },
               {

@@ -197,14 +197,17 @@ export default function ContactPage() {
 
               <div className="mt-8">
                 <div className="text-sm font-semibold text-slate-500">
-                  Testbed & Operations
+                  Engineering & Partnerships
                 </div>
                 <div className="mt-1 text-slate-900 font-extrabold">
-                  Liberia, Guanacaste — Costa Rica (LIR)
+                  6312 S Fiddlers Green Circle -
+                  Greenwood Village, CO 80111
+                  <br />
+                  Colorado, USA
                 </div>
                 <p className="mt-2 text-sm text-slate-600">
-                  We develop in Liberia for fast evidence cycles and airport-ready
-                  hydrogen operations (PRD, ventilation, detection, rapid turnarounds).
+                  We develop in Liberia, Costa Rica, and the USA for fast evidence cycles and airport-ready
+                  hydrogen operations (PRD, ventilation, detection, rapid turnaround, and exportable cert artifacts).
                 </p>
                 <div className="mt-4">
                   <Link

@@ -84,7 +84,7 @@ export default async function Home() {
                       Pre-Seed (Now)
                     </div>
                     <div className="mt-2 text-2xl font-extrabold text-slate-900">
-                      US$1.5–3.0M
+                      US$3.0–5.0M
                     </div>
                     <p className="mt-2 text-sm text-slate-600">
                       Deliver <strong>pressurized single-sector hot-fire</strong>, initial
@@ -155,7 +155,7 @@ export default async function Home() {
                 {/* KPI cards */}
                 <div className="grid gap-4 sm:grid-cols-3">
                   {[
-                    { k: "Pre-Seed", v: "US$1.5–3.0M", sub: "Now" },
+                    { k: "Pre-Seed", v: "US$3.0–5.0M", sub: "Now" },
                     { k: "Seed", v: "US$10–12M", sub: "Next" },
                     { k: "HQ", v: "Liberia, CR", sub: "Guanacaste" },
                   ].map((x) => (
@@ -299,7 +299,7 @@ export default async function Home() {
         <div className="relative mx-auto max-w-7xl px-6 py-16 lg:py-20 text-white">
           <h3 className="text-3xl sm:text-4xl font-extrabold tracking-[-0.01em]">Let’s build the fastest certifiable path to hydrogen aviation.</h3>
           <p className="mt-3 text-white/80">
-            invest@colibriv.com • press@colibriv.com • careers@colibriv.com — Liberia, Guanacaste, Costa Rica
+            invest@colibriv.com • press@colibriv.com • careers@colibriv.com — Denver, CO, USA
           </p>
           <div className="mt-6 flex gap-3">
             <Link href="/contact" className="inline-flex items-center rounded-xl bg-white px-5 py-3 text-base font-semibold text-slate-900 hover:opacity-90">

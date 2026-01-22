@@ -93,7 +93,7 @@ export default function InvestorsPage() {
             <div className="grid gap-6">
               <div className="border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-5">
                 <div className="text-xs font-extrabold uppercase tracking-wide text-slate-500">Pre-Seed (Now)</div>
-                <div className="mt-2 text-2xl font-extrabold text-slate-900">US$1.5–3.0M</div>
+                <div className="mt-2 text-2xl font-extrabold text-slate-900">US$3.0–5.0M</div>
                 <p className="mt-2 text-sm text-slate-600">
                   Deliver <strong>pressurized single-sector hot-fire</strong>, initial <strong>NOx/stability maps</strong>, and the safety plan to unlock core-engine run.
                 </p>

@@ -78,14 +78,15 @@ export default async function Footer() {
 
             <div className="mt-6 grid gap-4 text-sm text-slate-700">
               <div>
+                <p className="font-semibold text-slate-900">Colorado, USA</p>
+                <p>6312 S Fiddlers Green Circle</p>
+                <p>Greenwood Village, CO 80111</p>
+                <p className="text-slate-500 text-xs mt-1">Engineering & Partnerships</p>
+              </div>
+              <div>
                 <p className="font-semibold text-slate-900">Costa Rica</p>
                 <p>Guanacaste, Liberia (LIR)</p>
                 <p>Test & Operations</p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900">Denver, USA</p>
-                <p>Colorado Front Range</p>
-                <p>Engineering & Partnerships</p>
               </div>
             </div>
           </div>
