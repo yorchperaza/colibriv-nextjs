@@ -1,9 +1,9 @@
 // app/api/contact/route.ts
 import type { NextRequest } from "next/server";
-import { RecaptchaEnterpriseServiceClient } from "@google-cloud/recaptcha-enterprise";
 
 export const runtime = "nodejs"; // ensure Node runtime for outbound fetch
 
+const SITE_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
 const isProd = process.env.NODE_ENV === "production";
 
 /* ---------------- utils ---------------- */
@@ -16,74 +16,46 @@ function internal(msg: string) {
   return new Response(isProd ? "server_error" : msg, { status: 500 });
 }
 
-/* ---------------- reCAPTCHA Enterprise ---------------- */
+/* ---------------- reCAPTCHA v3 ---------------- */
 
-// Cache the client to avoid creating multiple instances
-let recaptchaClient: RecaptchaEnterpriseServiceClient | null = null;
-
-function getRecaptchaClient(): RecaptchaEnterpriseServiceClient {
-  if (!recaptchaClient) {
-    recaptchaClient = new RecaptchaEnterpriseServiceClient();
-  }
-  return recaptchaClient;
-}
-
-async function verifyRecaptchaEnterprise(token: string, expectedAction: string) {
-  const projectId = process.env.RECAPTCHA_PROJECT_ID;
-  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-  
-  if (!projectId) {
-    console.error("[reCAPTCHA Enterprise] RECAPTCHA_PROJECT_ID missing");
-    return { ok: false as const, reason: "recaptcha_misconfigured" as const };
-  }
-  if (!siteKey) {
-    console.error("[reCAPTCHA Enterprise] NEXT_PUBLIC_RECAPTCHA_SITE_KEY missing");
+async function verifyRecaptcha(token: string, expectedAction: string) {
+  const secret = process.env.RECAPTCHA_SECRET;
+  if (!secret) {
+    console.error("[reCAPTCHA v3] RECAPTCHA_SECRET missing");
     return { ok: false as const, reason: "recaptcha_misconfigured" as const };
   }
 
+  const body = new URLSearchParams({ secret, response: token });
+
+  const res = await fetch(SITE_VERIFY_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+    cache: "no-store",
+  });
+
+  let data: any = null;
   try {
-    const client = getRecaptchaClient();
-    const projectPath = client.projectPath(projectId);
+    data = await res.json();
+  } catch {
+    return { ok: false as const, reason: "recaptcha_parse_error" as const };
+  }
 
-    const [response] = await client.createAssessment({
-      assessment: {
-        event: {
-          token: token,
-          siteKey: siteKey,
-        },
-      },
-      parent: projectPath,
-    });
-
-    // Check if the token is valid
-    if (!response.tokenProperties?.valid) {
-      console.warn(
-        `[reCAPTCHA Enterprise] Invalid token: ${response.tokenProperties?.invalidReason}`
-      );
-      return { ok: false as const, reason: "recaptcha_invalid_token" as const };
-    }
-
-    // Check if the expected action was executed
-    if (response.tokenProperties.action !== expectedAction) {
-      console.warn(
-        `[reCAPTCHA Enterprise] Action mismatch: expected "${expectedAction}", got "${response.tokenProperties.action}"`
-      );
-      return { ok: false as const, reason: "recaptcha_action_mismatch" as const };
-    }
-
-    // Check the risk score (0.0 = likely bot, 1.0 = likely human)
-    const score = response.riskAnalysis?.score ?? 0;
-    if (score < 0.5) {
-      console.warn(`[reCAPTCHA Enterprise] Low score: ${score}`);
-      return { ok: false as const, reason: "recaptcha_low_score" as const };
-    }
-
-    console.log(`[reCAPTCHA Enterprise] Score: ${score}`);
-    return { ok: true as const, score };
-  } catch (error: any) {
-    console.error("[reCAPTCHA Enterprise] Error:", error?.message || error);
+  if (!data?.success) {
+    console.warn("[reCAPTCHA v3] Verification failed:", data);
     return { ok: false as const, reason: "recaptcha_failed" as const };
   }
+  if (data.action && data.action !== expectedAction) {
+    console.warn(`[reCAPTCHA v3] Action mismatch: expected "${expectedAction}", got "${data.action}"`);
+    return { ok: false as const, reason: "recaptcha_action_mismatch" as const };
+  }
+  if (typeof data.score === "number" && data.score < 0.5) {
+    console.warn(`[reCAPTCHA v3] Low score: ${data.score}`);
+    return { ok: false as const, reason: "recaptcha_low_score" as const };
+  }
+  
+  console.log(`[reCAPTCHA v3] Score: ${data.score}`);
+  return { ok: true as const, score: data.score };
 }
 
 /* ---------------- Monkeysmail ---------------- */
@@ -232,10 +204,10 @@ export async function POST(req: NextRequest) {
       return badRequest("missing_fields");
     }
 
-    // reCAPTCHA Enterprise
+    // reCAPTCHA v3
     const token = data.grecaptchaToken as string | undefined;
     if (!token) return badRequest("missing_recaptcha");
-    const check = await verifyRecaptchaEnterprise(token, "contact");
+    const check = await verifyRecaptcha(token, "contact");
     if (!check.ok) return badRequest(check.reason);
 
     // where to send

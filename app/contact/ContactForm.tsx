@@ -27,12 +27,12 @@ export default function ContactForm() {
     });
 
     try {
-      // @ts-ignore - reCAPTCHA Enterprise
-      if (typeof grecaptcha === "undefined" || !grecaptcha.enterprise) {
+      // @ts-ignore - reCAPTCHA v3
+      if (typeof grecaptcha === "undefined") {
         throw new Error("recaptcha_unavailable");
       }
-      // @ts-ignore - reCAPTCHA Enterprise
-      const token = await grecaptcha.enterprise.execute(SITE_KEY, { action: "contact" });
+      // @ts-ignore - reCAPTCHA v3
+      const token = await grecaptcha.execute(SITE_KEY, { action: "contact" });
       payload.grecaptchaToken = token;
 
       const res = await fetch("/api/contact", {
@@ -57,25 +57,25 @@ export default function ContactForm() {
   }, []);
 
   useEffect(() => {
-    // Preload reCAPTCHA Enterprise
+    // Preload reCAPTCHA v3
     // @ts-ignore
-    if (typeof grecaptcha !== "undefined" && grecaptcha.enterprise) {
+    if (typeof grecaptcha !== "undefined") {
       // @ts-ignore
-      grecaptcha.enterprise.ready(() => {});
+      grecaptcha.ready(() => {});
     }
   }, []);
 
   return (
     <>
-      {/* reCAPTCHA Enterprise Script */}
+      {/* reCAPTCHA v3 Script */}
       <Script
-        src={`https://www.google.com/recaptcha/enterprise.js?render=${SITE_KEY}`}
+        src={`https://www.google.com/recaptcha/api.js?render=${SITE_KEY}`}
         strategy="afterInteractive"
         onLoad={() => {
           // @ts-ignore
-          if (typeof grecaptcha !== "undefined" && grecaptcha.enterprise) {
+          if (typeof grecaptcha !== "undefined") {
             // @ts-ignore
-            grecaptcha.enterprise.ready(() => {});
+            grecaptcha.ready(() => {});
           }
         }}
       />
