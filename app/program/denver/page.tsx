@@ -1,6 +1,7 @@
 // app/program/denver/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import HeroStackBlock from "@/components/blocks/HeroStackBlock";
 
 export const metadata: Metadata = {
   title:
@@ -18,57 +19,8 @@ export const metadata: Metadata = {
 export default function DenverPage() {
   return (
     <main className="bg-white">
-      {/* ===== HERO ===== */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(1200px_600px_at_0%_-20%,#fee2e2_0%,transparent_60%),radial-gradient(900px_500px_at_100%_10%,#eef2ff_0%,transparent_60%)]" />
-        <div className="relative mx-auto max-w-7xl px-6 py-16 lg:py-24">
-          <div className="inline-flex items-center gap-2 rounded-full bg-red-600/10 px-3 py-1 text-xs font-semibold text-red-700 ring-1 ring-red-600/20">
-            <span className="block h-1.5 w-1.5 rounded-full bg-red-600" />
-            Denver, Colorado, USA
-          </div>
-
-          <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-[-0.01em] text-slate-900">
-            Engineering &amp; Partnerships Center
-          </h1>
-
-          <p className="mt-5 max-w-3xl text-lg sm:text-xl text-slate-700">
-            ColibriV&apos;s Denver facility serves as the company&apos;s{" "}
-            <strong>primary engineering, program management, and strategic operations center</strong>.
-            All core technical leadership, certification coordination, supplier integration, and
-            investor governance functions are anchored in Denver.
-          </p>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/contact"
-              className="inline-flex items-center rounded-xl bg-red-600 px-5 py-3 text-base font-semibold text-white shadow-sm hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
-            >
-              Contact Denver Team
-            </Link>
-            <Link
-              href="/program/testbed"
-              className="inline-flex items-center rounded-xl border-2 border-slate-900 px-5 py-3 text-base font-semibold text-slate-900 hover:bg-slate-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
-            >
-              View Test Facilities
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ===== U.S. OPERATIONAL CONTROL ===== */}
-      <section className="bg-slate-900 py-14 lg:py-20">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="rounded-2xl border border-red-500/30 bg-red-900/20 p-6 lg:p-8">
-            <p className="text-lg sm:text-xl text-white font-medium">
-              While ColibriV conducts specialized testing activities in international locations,{" "}
-              <strong className="text-red-400">
-                all program authority, intellectual property ownership, and certification strategy
-                remain under U.S. operational control.
-              </strong>
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Hero from Drupal block filtered by field_path = "/program/denver" */}
+      <HeroStackBlock path="/program/denver" />
 
       {/* ===== ROLE OF DENVER CENTER ===== */}
       <section className="bg-white py-14 lg:py-20">
