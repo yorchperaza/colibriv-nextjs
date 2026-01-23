@@ -3,12 +3,16 @@ import { HeaderNav } from "@/components/navigation/HeaderNav"
 import Footer from "@/components/layout/Footer"
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
+import Script from "next/script"
 
 import "@/styles/globals.css"
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") || "https://colibriv.com";
 const ogImage = `${siteUrl}/og/colibriv-home.jpg`;
+
+// Google Analytics ID
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-K3JMD0RR9S";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -88,6 +92,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* Google Analytics */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
+      </head>
       <body>
         <DraftAlert />
         <div className="mx-auto">

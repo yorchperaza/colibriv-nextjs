@@ -116,7 +116,7 @@ export default function AboutPage() {
                 <strong> means-of-compliance</strong> bundles aligned to ARP/DO frameworks.
               </p>
               <p>
-                With ColibriV headquartered in <strong>Liberia, Guanacaste (LIR)</strong>, Jorge emphasizes fast iteration
+                With ColibriV headquartered in <strong>Denver, Colorado, USA</strong>, Jorge emphasizes fast iteration
                 with cooperative authorities and real-world ground ops: PRD strategy, ventilation, purge, detection, and
                 rapid turnarounds—scaling to <strong>mid–long range passenger</strong> missions.
               </p>
@@ -130,7 +130,7 @@ export default function AboutPage() {
                 { k: "Safety", v: "Evidence pipelines", d: "Test → artifacts → authority packs" },
                 { k: "Combustion", v: "Pressurized single-sector", d: "NOx & stability mapping" },
                 { k: "Range Focus", v: "Mid–long range passenger", d: "Shared core • multi-country ops" },
-                { k: "Base", v: "Liberia (LIR), Costa Rica", d: "Cooperative authorities • velocity" },
+                { k: "Base", v: "Denver, Colorado, USA", d: "Cooperative authorities • velocity" },
               ].map((x) => (
                 <div key={x.k} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
                   <div className="text-sm font-semibold text-slate-500">{x.k}</div>
