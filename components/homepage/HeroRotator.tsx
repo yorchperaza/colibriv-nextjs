@@ -170,7 +170,7 @@ export default function HeroRotator({
               <p className="mt-3 max-w-3xl text-slate-600 text-base sm:text-lg leading-relaxed">
                 Phase 1: hydrogen-combustion <strong>turbofans</strong> using compressed gaseous H₂ — no cryogenics.
                 Phase 2: <strong>passenger aircraft</strong> built around them. Safety and certification from day one in
-                <strong> Guanacaste, Costa Rica (LIR)</strong>.
+                <strong> Denver, CO, USA</strong>.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">

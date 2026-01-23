@@ -30,7 +30,7 @@ export default function ContactPage() {
           </h1>
           <p className="mt-5 max-w-3xl text-lg sm:text-xl text-slate-700">
             Partners, investors, media, and candidates — reach out. Our team
-            operates from <strong>Liberia, Guanacaste (LIR)</strong> with a
+            operates from <strong>Denver, CO, USA</strong> with a
             certification-first program for <strong>mid–long range passenger</strong> missions.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
