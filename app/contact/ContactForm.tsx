@@ -167,8 +167,9 @@ export default function ContactForm() {
 
         <div className="flex items-center justify-between gap-4">
           <div className="text-xs text-slate-500">
-            Protected by reCAPTCHA. <span className="underline">Privacy</span> &{" "}
-            <span className="underline">Terms</span> apply.
+            Protected by reCAPTCHA.{" "}
+            <a href="/privacy" className="underline hover:text-slate-700">Privacy</a> &{" "}
+            <a href="/terms" className="underline hover:text-slate-700">Terms</a> apply.
           </div>
           <button
             type="submit"
