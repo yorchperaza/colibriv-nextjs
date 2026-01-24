@@ -281,6 +281,8 @@ function SuccessView({ tier, onClose }: { tier: { name: string; isRefundable?: b
 export default function PaymentModal({ isOpen, onClose, tier }: PaymentModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [selectedAmount, setSelectedAmount] = useState<number>(0)
+  const [customAmount, setCustomAmount] = useState("")
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -291,13 +293,16 @@ export default function PaymentModal({ isOpen, onClose, tier }: PaymentModalProp
       document.addEventListener("keydown", handleEscape)
       document.body.style.overflow = "hidden"
       setShowSuccess(false)
+      // Reset amount selection when modal opens
+      setSelectedAmount(tier?.amount || 0)
+      setCustomAmount("")
     }
 
     return () => {
       document.removeEventListener("keydown", handleEscape)
       document.body.style.overflow = "unset"
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, tier?.amount])
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -305,11 +310,28 @@ export default function PaymentModal({ isOpen, onClose, tier }: PaymentModalProp
     }
   }
 
+  const handleSelectAmount = (amount: number) => {
+    setSelectedAmount(amount)
+    setCustomAmount("")
+  }
+
+  const handleCustomAmountSubmit = () => {
+    const amount = parseInt(customAmount, 10)
+    if (amount && amount >= 25) {
+      setSelectedAmount(amount)
+    }
+  }
+
   if (!isOpen || !tier) return null
+
+  // If tier has amount 0, show selection step first
+  const needsAmountSelection = tier.amount === 0 && selectedAmount === 0
+  const effectiveAmount = tier.amount > 0 ? tier.amount : selectedAmount
+  const effectiveTier = { ...tier, amount: effectiveAmount }
 
   const options = {
     mode: "payment" as const,
-    amount: tier.amount * 100,
+    amount: effectiveAmount * 100,
     currency: "usd",
     appearance: {
       theme: "stripe" as const,
@@ -333,7 +355,13 @@ export default function PaymentModal({ isOpen, onClose, tier }: PaymentModalProp
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
           <h2 className="text-xl font-extrabold text-slate-900">
-            {showSuccess ? "Confirmed!" : tier.isRefundable ? "Reserve Your Spot" : "Complete Your Support"}
+            {showSuccess 
+              ? "Confirmed!" 
+              : needsAmountSelection 
+                ? "Select Your Amount" 
+                : tier.isRefundable 
+                  ? "Reserve Your Spot" 
+                  : "Complete Your Support"}
           </h2>
           <button
             onClick={onClose}
@@ -349,11 +377,71 @@ export default function PaymentModal({ isOpen, onClose, tier }: PaymentModalProp
         {/* Content */}
         <div className="px-6 py-6 max-h-[70vh] overflow-y-auto">
           {showSuccess ? (
-            <SuccessView tier={tier} onClose={onClose} />
+            <SuccessView tier={effectiveTier} onClose={onClose} />
+          ) : needsAmountSelection ? (
+            /* Amount Selection Step */
+            <div className="space-y-6">
+              <div>
+                <p className="text-slate-700 mb-1">{tier.description}</p>
+                {tier.isRefundable && (
+                  <p className="text-sm text-green-700 font-medium">
+                    ✓ Fully refundable before campaign launch
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-slate-700 mb-3">Choose an amount:</p>
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                  {[25, 50, 100, 250].map((amt) => (
+                    <button
+                      key={amt}
+                      onClick={() => handleSelectAmount(amt)}
+                      className="rounded-xl border-2 border-red-600 px-4 py-3 text-base font-semibold text-red-600 hover:bg-red-600 hover:text-white transition-colors"
+                    >
+                      ${amt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-slate-700 mb-2">Or enter a custom amount:</p>
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                    <input
+                      type="number"
+                      min="25"
+                      placeholder="Enter amount"
+                      value={customAmount}
+                      onChange={(e) => setCustomAmount(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleCustomAmountSubmit()}
+                      className="w-full pl-7 pr-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                    />
+                  </div>
+                  <button
+                    onClick={handleCustomAmountSubmit}
+                    disabled={!customAmount || parseInt(customAmount) < 25}
+                    className="rounded-xl bg-red-600 px-6 py-3 font-semibold text-white hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                  >
+                    Continue
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">Minimum $25 USD</p>
+              </div>
+
+              <button
+                onClick={onClose}
+                className="w-full rounded-xl border-2 border-slate-300 px-5 py-3 text-base font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           ) : (
             <Elements stripe={stripePromise} options={options}>
               <CheckoutForm
-                tier={tier}
+                tier={effectiveTier}
                 onSuccess={() => setShowSuccess(true)}
                 onClose={onClose}
               />
