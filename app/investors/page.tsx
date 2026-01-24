@@ -229,8 +229,79 @@ export default function InvestorsPage() {
         </div>
       </section>
 
+      {/* ===== WHY DENVER ===== */}
+      <section id="why-denver" className="bg-white py-16 lg:py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] items-start">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-md bg-red-600/10 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-red-700 ring-1 ring-red-600/20">
+                Location Advantage
+              </div>
+              <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-[-0.01em] text-slate-900">
+                Why Denver, Colorado
+              </h2>
+              <p className="mt-4 text-slate-700">
+                Denver is ColibriV&apos;s engineering authority and governance center. It anchors certification strategy,
+                systems integration, supplier control, and investor oversight under U.S. aerospace and corporate
+                standards—reducing regulatory and execution risk as the program scales.
+              </p>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {[
+                  { t: "Certification & governance", d: "U.S.-based engineering authority directs FAA pathways, safety governance, and configuration control." },
+                  { t: "Systems integration", d: "Core propulsion architecture, hydrogen combustion modeling, and cross-discipline integration are led from Denver." },
+                  { t: "Supplier & partner access", d: "Proximity to U.S. aerospace suppliers, research institutions, and certification advisors." },
+                  { t: "Investor & corporate control", d: "Corporate governance, IP ownership, financial controls, and reporting remain under U.S. jurisdiction." },
+                ].map((x) => (
+                  <div key={x.t} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                    <div className="text-sm font-semibold text-slate-500">{x.t}</div>
+                    <div className="mt-1 text-lg font-extrabold text-slate-900">{x.d}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/program/denver" className="inline-flex items-center rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:opacity-95">
+                  Visit the Denver engineering center
+                </Link>
+                <Link href="/program/roadmap" className="inline-flex items-center rounded-xl border-2 border-slate-900 px-5 py-3 font-semibold text-slate-900 hover:bg-slate-900 hover:text-white">
+                  See the certification roadmap
+                </Link>
+              </div>
+            </div>
+
+            <aside className="rounded-2xl border border-slate-200 bg-white p-6 lg:p-8">
+              <div className="aspect-[16/10] w-full overflow-hidden rounded-xl relative border border-slate-200">
+                <Image
+                  alt="Denver, Colorado — Engineering & Program Center"
+                  src="/images/denver.jpg"
+                  fill
+                  className="object-cover"
+                  sizes="(min-width: 1024px) 33vw, 100vw"
+                />
+              </div>
+              <p className="mt-3 text-sm text-slate-600">
+                Denver, Colorado — Engineering &amp; Program Center
+              </p>
+              <p className="mt-2 text-sm text-slate-700">
+                Denver supports program definition, certification readiness, and partner coordination for propulsion and aircraft integration activities.
+              </p>
+              <ul className="mt-4 space-y-2 text-slate-700 text-sm">
+                <li>• FAA-aligned certification planning (Part 33 / Part 25 roadmap)</li>
+                <li>• Systems safety, configuration, and traceability governance</li>
+                <li>• Supplier qualification and contract oversight</li>
+                <li>• IP protection and export compliance alignment</li>
+              </ul>
+              <p className="mt-4 text-sm text-slate-500 italic">
+                All international testing activities operate under Denver-based engineering authority.
+              </p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
       {/* ===== WHY COSTA RICA / LIBERIA ===== */}
-      <section id="why-costa-rica" className="bg-white py-16 lg:py-24">
+      <section id="why-costa-rica" className="bg-slate-50 py-16 lg:py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] items-start">
             <div>
