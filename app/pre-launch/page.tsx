@@ -555,7 +555,7 @@ export default function PreLaunchPage() {
             <button
               onClick={() => openPaymentModal({
                 name: "Refundable Reservation",
-                amount: 100,
+                amount: 0, // Amount will be selected in modal
                 description: "Fully refundable before campaign launch",
                 isRefundable: true,
               })}
