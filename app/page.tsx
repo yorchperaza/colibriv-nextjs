@@ -6,6 +6,7 @@ import TitleTextCardBlock from "@/components/blocks/TitleTextCardBlock"
 import ListCardsBlock from "@/components/blocks/ListCardsBlock"
 import BodyMediaBlock from "@/components/blocks/BodyMediaBlock"
 import LatestArticlesBlock from "@/components/blocks/LatestArticlesBlock"
+import TitleDescriptionLinkCardWithBlock from "@/components/blocks/TitleDescriptionLinkCardWithBlock"
 
 export default async function Home() {
 
@@ -326,6 +327,7 @@ export default async function Home() {
       <RouteMediaBlock path="/" />
       <TitleTextCardBlock path="/" />
       <SafetyStrip />
+      <TitleDescriptionLinkCardWithBlock path="/" />
       <ListCardsBlock path="/" />
       <BodyMediaBlock path="/" />
 

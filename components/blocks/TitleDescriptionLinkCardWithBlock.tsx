@@ -260,8 +260,8 @@ export default async function TitleDescriptionLinkCardWithBlock(props: Props) {
 
                   {bodyProcessed ? (
                     <div
-                      className="mt-6 space-y-4 text-slate-700"
-                      // Body is expected to contain <ol> / <li> etc.
+                      className="mt-6 prose prose-slate prose-lg max-w-none prose-ol:list-decimal prose-ul:list-disc prose-li:marker:text-red-600"
+                      // Body contains HTML: <ol>, <li>, <p>, <strong>, etc.
                       dangerouslySetInnerHTML={{ __html: bodyProcessed }}
                     />
                   ) : null}
