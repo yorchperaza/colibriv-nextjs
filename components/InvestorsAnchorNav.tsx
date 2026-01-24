@@ -75,6 +75,14 @@ export default function InvestorsAnchorNav({ offset = 88 }: Props) {
         Why Invest
       </a>
       <a
+        href="#why-denver"
+        aria-current={active === "why-denver" ? "true" : undefined}
+        onClick={(e) => go(e, "why-denver")}
+        className="inline-flex items-center rounded-full border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-900 hover:border-slate-900 hover:bg-slate-50"
+      >
+        Why Denver
+      </a>
+      <a
         href="#why-costa-rica"
         aria-current={active === "why-costa-rica" ? "true" : undefined}
         onClick={(e) => go(e, "why-costa-rica")}
